@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { STATS } from './stats.ts'
-import { BASE_STATS } from './baseStats.ts'
+import { BASE_STATS, getBaseStat } from './baseStats.ts'
+import { buildTimeline } from './simulator.ts'
 import StatInput from './components/StatInput.tsx'
 import { Button } from '@/components/ui/button'
 
@@ -19,6 +20,11 @@ function App() {
     }, 0)
     return Math.round(total)
   }, [stats])
+
+  const timeline = useMemo(
+    () => buildTimeline(getBaseStat('attackSpeed'), stats.attackSpeed, getBaseStat('attack')),
+    [stats.attackSpeed],
+  )
 
   function updateStat(key: string, value: number) {
     setStats((prev) => ({ ...prev, [key]: value }))
@@ -50,7 +56,10 @@ function App() {
             {BASE_STATS.map((stat) => (
               <div key={stat.key} className="text-center">
                 <div className="text-sm font-semibold">{stat.label}</div>
-                <div className="text-xl font-bold tabular-nums">{stat.value}</div>
+                <div className="text-xl font-bold tabular-nums">
+                  {stat.value.toFixed(stat.decimals ?? 0)}
+                  {stat.unit ?? ''}
+                </div>
               </div>
             ))}
           </div>
@@ -87,6 +96,20 @@ function App() {
             />
           ))}
         </section>
+
+        <div className="mt-6 border-t pt-4">
+          <div className="mb-2 text-center text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Simulation
+          </div>
+          <div className="flex flex-col gap-1 font-mono text-sm">
+            {timeline.map((event, index) => (
+              <div key={index} className="flex gap-3">
+                <span className="w-20 shrink-0 text-muted-foreground">t={event.time.toFixed(2)}s</span>
+                <span>{event.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
