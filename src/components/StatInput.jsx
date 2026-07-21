@@ -10,6 +10,7 @@ function clamp(value, min, max) {
 export default function StatInput({ stat, value, onChange }) {
   const { key, label, min, max, unit, base } = stat
   const [text, setText] = useState(String(value))
+  const isZero = value === 0
 
   function commit(rawText) {
     const parsed = Number.parseFloat(rawText)
@@ -30,7 +31,10 @@ export default function StatInput({ stat, value, onChange }) {
 
   return (
     <div className="flex items-center gap-3 border-b py-2 text-sm last:border-b-0">
-      <Label htmlFor={key} className="w-28 shrink-0 flex-col items-start gap-0 font-semibold leading-tight">
+      <Label
+        htmlFor={key}
+        className={`w-28 shrink-0 flex-col items-start gap-0 font-semibold leading-tight ${isZero ? 'text-muted-foreground/50' : ''}`}
+      >
         {label}
         <span className="text-[11px] font-normal text-muted-foreground">
           {min}-{max}{unit}
@@ -45,7 +49,7 @@ export default function StatInput({ stat, value, onChange }) {
         onValueChange={handleSliderChange}
         className="flex-1"
       />
-      <div className="flex shrink-0 items-center gap-1">
+      <div className={`flex shrink-0 items-center gap-1 ${isZero ? 'text-muted-foreground/50' : ''}`}>
         <Input
           id={key}
           type="number"
@@ -59,7 +63,7 @@ export default function StatInput({ stat, value, onChange }) {
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.target.blur()
           }}
-          className="h-7 w-14 text-right"
+          className={`h-7 w-14 text-right ${isZero ? 'text-muted-foreground/50' : ''}`}
         />
         <span className="text-muted-foreground">{unit}</span>
       </div>
