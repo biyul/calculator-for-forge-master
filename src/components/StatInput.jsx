@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Minus, Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
@@ -12,11 +14,19 @@ export default function StatInput({ stat, value, onChange }) {
   const [text, setText] = useState(String(value))
   const isZero = value === 0
 
+  useEffect(() => {
+    setText(String(value))
+  }, [value])
+
+  function applyValue(next) {
+    setText(String(next))
+    onChange(next)
+  }
+
   function commit(rawText) {
     const parsed = Number.parseFloat(rawText)
     const next = Number.isFinite(parsed) ? clamp(parsed, min, max) : min
-    setText(String(next))
-    onChange(next)
+    applyValue(next)
   }
 
   function handleSliderChange(values) {
@@ -24,9 +34,7 @@ export default function StatInput({ stat, value, onChange }) {
     // array depending on the interaction (drag vs. keyboard), despite us
     // always passing an array value.
     const raw = Array.isArray(values) ? values[0] : values
-    const next = clamp(raw, min, max)
-    setText(String(next))
-    onChange(next)
+    applyValue(clamp(raw, min, max))
   }
 
   return (
@@ -66,6 +74,26 @@ export default function StatInput({ stat, value, onChange }) {
           className={`h-7 w-14 text-right ${isZero ? 'text-muted-foreground/50' : ''}`}
         />
         <span className="text-muted-foreground">{unit}</span>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-xs"
+          aria-label={`Set ${label} to 0`}
+          onClick={() => applyValue(0)}
+        >
+          <Minus />
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-xs"
+          aria-label={`Set ${label} to max`}
+          onClick={() => applyValue(max)}
+        >
+          <Plus />
+        </Button>
       </div>
     </div>
   )
