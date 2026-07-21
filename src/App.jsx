@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { STATS } from './stats'
 import StatInput from './components/StatInput'
@@ -8,6 +8,14 @@ const initialStats = Object.fromEntries(STATS.map((s) => [s.key, s.min]))
 
 function App() {
   const [stats, setStats] = useState(initialStats)
+
+  const powerLevel = useMemo(() => {
+    const total = STATS.reduce((sum, stat) => {
+      const value = stats[stat.key]
+      return sum + ((value - stat.min) / (stat.max - stat.min)) * 100
+    }, 0)
+    return Math.round(total)
+  }, [stats])
 
   function updateStat(key, value) {
     setStats((prev) => ({ ...prev, [key]: value }))
@@ -20,10 +28,17 @@ function App() {
   return (
     <div className="px-4 pb-6">
       <h1 className="py-5 text-center text-2xl font-medium tracking-tight">
-        Forge Master DPS Calculator
+        DPS Calculator
       </h1>
 
       <div className="mx-auto flex max-w-lg flex-col">
+        <div className="pb-4 text-center">
+          <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Power Level
+          </div>
+          <div className="text-5xl font-bold tabular-nums">{powerLevel}</div>
+        </div>
+
         <div className="flex justify-end gap-1 pb-2">
           <Button
             type="button"

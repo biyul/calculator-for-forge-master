@@ -1,4 +1,4 @@
-// Stat definitions for the Forge Master DPS calculator.
+// Stat definitions for the DPS calculator.
 // `base` is the value a character has even with 0 invested (only crit damage has one).
 export const STATS = [
   { key: 'block', label: 'Block', min: 0, max: 7, unit: '%' },
