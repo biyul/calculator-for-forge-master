@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { STATS } from './stats'
+import { BASE_STATS } from './baseStats'
 import StatInput from './components/StatInput'
 import { Button } from '@/components/ui/button'
 
@@ -37,6 +38,20 @@ function App() {
             Power Level
           </div>
           <div className="text-5xl font-bold tabular-nums">{powerLevel}</div>
+        </div>
+
+        <div className="mb-4 border-y py-3">
+          <div className="mb-2 text-center text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Base Stats
+          </div>
+          <div className="flex justify-center gap-8">
+            {BASE_STATS.map((stat) => (
+              <div key={stat.key} className="text-center">
+                <div className="text-sm font-semibold">{stat.label}</div>
+                <div className="text-xl font-bold tabular-nums">{stat.value}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="flex justify-end gap-1 pb-2">
