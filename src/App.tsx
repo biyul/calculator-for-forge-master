@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
-import { STATS } from './stats'
-import { BASE_STATS } from './baseStats'
-import StatInput from './components/StatInput'
+import { STATS } from './stats.ts'
+import { BASE_STATS } from './baseStats.ts'
+import StatInput from './components/StatInput.tsx'
 import { Button } from '@/components/ui/button'
 
-const initialStats = Object.fromEntries(STATS.map((s) => [s.key, s.min]))
+type StatValues = Record<string, number>
+
+const initialStats: StatValues = Object.fromEntries(STATS.map((s) => [s.key, s.min]))
 
 function App() {
-  const [stats, setStats] = useState(initialStats)
+  const [stats, setStats] = useState<StatValues>(initialStats)
 
   const powerLevel = useMemo(() => {
     const total = STATS.reduce((sum, stat) => {
@@ -18,11 +20,11 @@ function App() {
     return Math.round(total)
   }, [stats])
 
-  function updateStat(key, value) {
+  function updateStat(key: string, value: number) {
     setStats((prev) => ({ ...prev, [key]: value }))
   }
 
-  function setAllStats(mode) {
+  function setAllStats(mode: 'min' | 'max') {
     setStats(Object.fromEntries(STATS.map((s) => [s.key, mode === 'max' ? s.max : 0])))
   }
 

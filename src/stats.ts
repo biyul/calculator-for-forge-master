@@ -1,6 +1,15 @@
 // Stat definitions for the DPS calculator.
 // `base` is the value a character has even with 0 invested (only crit damage has one).
-export const STATS = [
+export interface Stat {
+  key: string
+  label: string
+  min: number
+  max: number
+  unit: string
+  base?: number
+}
+
+export const STATS: Stat[] = [
   { key: 'block', label: 'Block', min: 0, max: 7, unit: '%' },
   { key: 'attackSpeed', label: 'Att Speed', min: 0, max: 40, unit: '%' },
   { key: 'critChance', label: 'Crit Chance', min: 0, max: 12, unit: '%' },

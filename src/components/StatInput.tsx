@@ -4,12 +4,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
+import type { Stat } from '../stats.ts'
 
-function clamp(value, min, max) {
+interface StatInputProps {
+  stat: Stat
+  value: number
+  onChange: (value: number) => void
+}
+
+function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
 }
 
-export default function StatInput({ stat, value, onChange }) {
+export default function StatInput({ stat, value, onChange }: StatInputProps) {
   const { key, label, min, max, unit, base } = stat
   const [text, setText] = useState(String(value))
   const isZero = value === 0
@@ -18,22 +25,22 @@ export default function StatInput({ stat, value, onChange }) {
     setText(String(value))
   }, [value])
 
-  function applyValue(next) {
+  function applyValue(next: number) {
     setText(String(next))
     onChange(next)
   }
 
-  function commit(rawText) {
+  function commit(rawText: string) {
     const parsed = Number.parseFloat(rawText)
     const next = Number.isFinite(parsed) ? clamp(parsed, min, max) : min
     applyValue(next)
   }
 
-  function handleSliderChange(values) {
+  function handleSliderChange(values: number | readonly number[]) {
     // base-ui's Slider can report either a plain number or a single-element
     // array depending on the interaction (drag vs. keyboard), despite us
     // always passing an array value.
-    const raw = Array.isArray(values) ? values[0] : values
+    const raw = Array.isArray(values) ? values[0] : (values as number)
     applyValue(clamp(raw, min, max))
   }
 
@@ -69,7 +76,7 @@ export default function StatInput({ stat, value, onChange }) {
           onChange={(e) => setText(e.target.value)}
           onBlur={(e) => commit(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') e.target.blur()
+            if (e.key === 'Enter') e.currentTarget.blur()
           }}
           className={`h-7 w-14 text-right ${isZero ? 'text-muted-foreground/50' : ''}`}
         />
