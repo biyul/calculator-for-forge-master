@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { getBaseStat } from './baseStats.ts'
 import { buildTimeline } from './simulator.ts'
+import { hpColorClass } from './hpColor.ts'
 import { useCombatantStats } from './useCombatantStats.ts'
 import CombatantPanel from './components/CombatantPanel.tsx'
 
@@ -16,12 +17,14 @@ function App() {
           baseAttackSpeed: getBaseStat('attackSpeed'),
           attackSpeedPercent: player.stats.attackSpeed,
           attackDamage: getBaseStat('attack'),
+          hp: getBaseStat('hp'),
         },
         {
           label: 'Foe',
           baseAttackSpeed: getBaseStat('attackSpeed'),
           attackSpeedPercent: foe.stats.attackSpeed,
           attackDamage: getBaseStat('attack'),
+          hp: getBaseStat('hp'),
         },
       ]),
     [player.stats.attackSpeed, foe.stats.attackSpeed],
@@ -55,12 +58,31 @@ function App() {
             Simulation
           </div>
           <div className="flex max-h-[80vh] flex-col gap-3 overflow-y-auto font-mono text-sm whitespace-nowrap">
-            {timeline.map((event, index) => (
-              <div key={index} className="flex flex-col">
-                <span className="text-muted-foreground">t={event.time.toFixed(2)}s</span>
-                <span>{event.text}</span>
-              </div>
-            ))}
+            {timeline.map((event, index) => {
+              if (event.kind === 'victory') {
+                return (
+                  <div key={index} className="flex flex-col">
+                    <span className="text-muted-foreground">t={event.time.toFixed(2)}s</span>
+                    <span>
+                      <span className="font-bold">{event.winnerLabel}</span> wins!
+                    </span>
+                  </div>
+                )
+              }
+
+              const percent = Math.round((event.targetHpAfter / event.targetMaxHp) * 100)
+              return (
+                <div key={index} className="flex flex-col">
+                  <span className="text-muted-foreground">t={event.time.toFixed(2)}s</span>
+                  <span>
+                    {event.attackerLabel} attacks for {event.damage} damage
+                  </span>
+                  <span className={hpColorClass(percent)}>
+                    {event.targetLabel} HP: {event.targetHpAfter} ({percent}%)
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
