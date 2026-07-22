@@ -75,10 +75,19 @@ function App() {
                 <div key={index} className="flex flex-col">
                   <span className="text-muted-foreground">t={event.time.toFixed(2)}s</span>
                   <span>
-                    {event.attackerLabel} attacks for {event.damage} damage
+                    {event.attackerLabel}
+                    {': '}
+                    <span className="font-bold">Attack</span>
+                    {'!'}
                   </span>
-                  <span className={hpColorClass(percent)}>
-                    {event.targetLabel} HP: {event.targetHpAfter} ({percent}%)
+                  <span>
+                    {event.targetLabel}
+                    {': '}
+                    <span className="font-bold">-{event.damage}</span>
+                    {' ('}
+                    <span className={hpColorClass(percent)}>{event.targetHpAfter}HP</span>
+                    {') '}
+                    <span className="text-neutral-500 italic">{percent}%</span>
                   </span>
                 </div>
               )
