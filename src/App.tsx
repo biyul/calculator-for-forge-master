@@ -3,7 +3,7 @@ import { RotateCw } from 'lucide-react'
 import { getBaseStat } from './baseStats.ts'
 import { getStatBase } from './stats.ts'
 import { buildTimeline, type AttackEvent, type RegenEvent } from './simulator.ts'
-import { hpColorClass } from './hpColor.ts'
+import { hpBar } from './hpBar.ts'
 import { useCombatantStats } from './useCombatantStats.ts'
 import CombatantPanel from './components/CombatantPanel.tsx'
 import { Button } from '@/components/ui/button'
@@ -115,11 +115,11 @@ function App() {
                     <span>
                       {event.label}
                       {' ← '}
-                      <span className="font-bold text-black dark:text-neutral-300">+{event.healAmount}</span>
-                      {' ('}
-                      <span className={hpColorClass(percent)}>{event.hpAfter}HP</span>
-                      {') '}
-                      <span className="text-neutral-500 italic">{percent}%</span>
+                      <span className="font-bold text-green-600">+{event.healAmount}</span>
+                      {' '}
+                      <span className="text-neutral-500">{hpBar(percent)}</span>
+                      {' '}
+                      <span className="text-neutral-500">{event.hpAfter}</span>
                     </span>
                   </div>
                 )
@@ -169,31 +169,25 @@ function App() {
                   <span>
                     {event.targetLabel}
                     {' ← '}
-                    <span className="font-bold text-black dark:text-neutral-300">-{event.damage}</span>
-                    {' ('}
-                    <span className={hpColorClass(percent)}>{event.targetHpAfter}HP</span>
-                    {') '}
-                    <span className="text-neutral-500 italic">{percent}%</span>
+                    <span className="font-bold text-yellow-600">-{event.damage}</span>
+                    {' '}
+                    <span className="text-neutral-500">{hpBar(percent)}</span>
+                    {' '}
+                    <span className="text-neutral-500">{event.targetHpAfter}</span>
                   </span>
                   {event.lifesteal && (
                     <span>
                       {event.attackerLabel}
                       {' ← '}
-                      <span className="font-bold text-black dark:text-neutral-300">
+                      <span className="font-bold text-green-600">
                         +{event.lifesteal.healAmount}
                       </span>
-                      {' ('}
-                      <span
-                        className={hpColorClass(
-                          Math.round((event.lifesteal.attackerHpAfter / event.lifesteal.attackerMaxHp) * 100),
-                        )}
-                      >
-                        {event.lifesteal.attackerHpAfter}HP
+                      {' '}
+                      <span className="text-neutral-500">
+                        {hpBar(Math.round((event.lifesteal.attackerHpAfter / event.lifesteal.attackerMaxHp) * 100))}
                       </span>
-                      {') '}
-                      <span className="text-neutral-500 italic">
-                        {Math.round((event.lifesteal.attackerHpAfter / event.lifesteal.attackerMaxHp) * 100)}%
-                      </span>
+                      {' '}
+                      <span className="text-neutral-500">{event.lifesteal.attackerHpAfter}</span>
                     </span>
                   )}
                 </div>
