@@ -1,3 +1,9 @@
+export interface LifestealHeal {
+  healAmount: number
+  attackerHpAfter: number
+  attackerMaxHp: number
+}
+
 export interface AttackEvent {
   kind: 'attack'
   time: number
@@ -8,6 +14,7 @@ export interface AttackEvent {
   isBlocked: boolean
   targetHpAfter: number
   targetMaxHp: number
+  lifesteal?: LifestealHeal
 }
 
 export interface RegenEvent {
@@ -37,6 +44,7 @@ export interface CombatantInput {
   critDamageMultiplier: number
   blockChance: number
   healthRegPercent: number
+  lifestealPercent: number
 }
 
 interface RawAttack {
@@ -120,6 +128,10 @@ export function buildTimeline(combatants: [CombatantInput, CombatantInput]): Tim
 
   const maxHp: Record<string, number> = { [a.label]: a.hp, [b.label]: b.hp }
   const currentHp: Record<string, number> = { ...maxHp }
+  const lifestealByLabel: Record<string, number> = {
+    [a.label]: a.lifestealPercent,
+    [b.label]: b.lifestealPercent,
+  }
 
   const timeline: TimelineEvent[] = []
 
@@ -138,6 +150,24 @@ export function buildTimeline(combatants: [CombatantInput, CombatantInput]): Tim
     }
 
     currentHp[event.targetLabel] = Math.max(0, currentHp[event.targetLabel] - event.damage)
+
+    let lifesteal: LifestealHeal | undefined
+    if (!event.isBlocked) {
+      const lifestealPercent = lifestealByLabel[event.attackerLabel]
+      const healAmount = Math.round(event.damage * (lifestealPercent / 100))
+      if (healAmount > 0) {
+        currentHp[event.attackerLabel] = Math.min(
+          maxHp[event.attackerLabel],
+          currentHp[event.attackerLabel] + healAmount,
+        )
+        lifesteal = {
+          healAmount,
+          attackerHpAfter: currentHp[event.attackerLabel],
+          attackerMaxHp: maxHp[event.attackerLabel],
+        }
+      }
+    }
+
     timeline.push({
       kind: 'attack',
       time: event.time,
@@ -148,6 +178,7 @@ export function buildTimeline(combatants: [CombatantInput, CombatantInput]): Tim
       isBlocked: event.isBlocked,
       targetHpAfter: currentHp[event.targetLabel],
       targetMaxHp: maxHp[event.targetLabel],
+      lifesteal,
     })
 
     if (currentHp[event.targetLabel] <= 0) {

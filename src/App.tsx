@@ -26,6 +26,7 @@ function App() {
           critDamageMultiplier: getStatBase('critDamage') + player.stats.critDamage,
           blockChance: player.stats.block,
           healthRegPercent: player.stats.healthReg,
+          lifestealPercent: player.stats.lifesteal,
         },
         {
           label: 'Foe',
@@ -37,6 +38,7 @@ function App() {
           critDamageMultiplier: getStatBase('critDamage') + foe.stats.critDamage,
           blockChance: foe.stats.block,
           healthRegPercent: foe.stats.healthReg,
+          lifestealPercent: foe.stats.lifesteal,
         },
       ]),
     [
@@ -45,11 +47,13 @@ function App() {
       player.stats.critDamage,
       player.stats.block,
       player.stats.healthReg,
+      player.stats.lifesteal,
       foe.stats.attackSpeed,
       foe.stats.critChance,
       foe.stats.critDamage,
       foe.stats.block,
       foe.stats.healthReg,
+      foe.stats.lifesteal,
       rerunCount,
     ],
   )
@@ -110,7 +114,7 @@ function App() {
                     </span>
                     <span>
                       {event.label}
-                      {': '}
+                      {' ← '}
                       <span className="font-bold text-black dark:text-neutral-300">+{event.healAmount}</span>
                       {' ('}
                       <span className={hpColorClass(percent)}>{event.hpAfter}HP</span>
@@ -164,13 +168,34 @@ function App() {
                   </span>
                   <span>
                     {event.targetLabel}
-                    {': '}
+                    {' ← '}
                     <span className="font-bold text-black dark:text-neutral-300">-{event.damage}</span>
                     {' ('}
                     <span className={hpColorClass(percent)}>{event.targetHpAfter}HP</span>
                     {') '}
                     <span className="text-neutral-500 italic">{percent}%</span>
                   </span>
+                  {event.lifesteal && (
+                    <span>
+                      {event.attackerLabel}
+                      {' ← '}
+                      <span className="font-bold text-black dark:text-neutral-300">
+                        +{event.lifesteal.healAmount}
+                      </span>
+                      {' ('}
+                      <span
+                        className={hpColorClass(
+                          Math.round((event.lifesteal.attackerHpAfter / event.lifesteal.attackerMaxHp) * 100),
+                        )}
+                      >
+                        {event.lifesteal.attackerHpAfter}HP
+                      </span>
+                      {') '}
+                      <span className="text-neutral-500 italic">
+                        {Math.round((event.lifesteal.attackerHpAfter / event.lifesteal.attackerMaxHp) * 100)}%
+                      </span>
+                    </span>
+                  )}
                 </div>
               )
             })}
