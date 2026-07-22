@@ -10,9 +10,9 @@ export interface Stat {
 }
 
 export const STATS: Stat[] = [
-  { key: 'block', label: 'Block', min: 0, max: 7, unit: '%' },
+  { key: 'block', label: 'Block', min: 0, max: 100, unit: '%' },
   { key: 'attackSpeed', label: 'Att Speed', min: 0, max: 40, unit: '%' },
-  { key: 'critChance', label: 'Crit Chance', min: 0, max: 50, unit: '%' },
+  { key: 'critChance', label: 'Crit Chance', min: 0, max: 100, unit: '%' },
   { key: 'critDamage', label: 'Crit Damage', min: 0, max: 80, unit: '%', base: 20 },
   { key: 'skillDamage', label: 'Skill Damage', min: 0, max: 30, unit: '%' },
   { key: 'healthReg', label: 'Health Reg', min: 0, max: 4, unit: '%' },
