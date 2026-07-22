@@ -100,7 +100,7 @@ function App() {
                     <span>
                       {event.attackerLabel}
                       {': '}
-                      <span className="font-bold text-black">Attack</span>
+                      <span className="font-bold text-black dark:text-neutral-300">Attack</span>
                       {'!'}
                       {event.isCrit && (
                         <>
@@ -137,7 +137,7 @@ function App() {
                   <span>
                     {event.targetLabel}
                     {': '}
-                    <span className="font-bold text-black">-{event.damage}</span>
+                    <span className="font-bold text-black dark:text-neutral-300">-{event.damage}</span>
                     {' ('}
                     <span className={hpColorClass(percent)}>{event.targetHpAfter}HP</span>
                     {') '}
