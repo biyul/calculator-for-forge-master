@@ -10,13 +10,22 @@ export interface AttackEvent {
   targetMaxHp: number
 }
 
+export interface RegenEvent {
+  kind: 'regen'
+  time: number
+  label: string
+  healAmount: number
+  hpAfter: number
+  maxHp: number
+}
+
 export interface VictoryEvent {
   kind: 'victory'
   time: number
   winnerLabel: string
 }
 
-export type TimelineEvent = AttackEvent | VictoryEvent
+export type TimelineEvent = AttackEvent | RegenEvent | VictoryEvent
 
 export interface CombatantInput {
   label: string
@@ -27,9 +36,11 @@ export interface CombatantInput {
   critChance: number
   critDamageMultiplier: number
   blockChance: number
+  healthRegPercent: number
 }
 
 interface RawAttack {
+  kind: 'attack'
   time: number
   attackerLabel: string
   targetLabel: string
@@ -38,7 +49,17 @@ interface RawAttack {
   isBlocked: boolean
 }
 
+interface RawRegen {
+  kind: 'regen'
+  time: number
+  label: string
+  healAmount: number
+}
+
+type RawEvent = RawAttack | RawRegen
+
 const TIMELINE_DURATION_SEC = 15
+const REGEN_INTERVAL_SEC = 1
 const EPSILON = 1e-9
 
 function buildCombatantAttacks(attacker: CombatantInput, target: CombatantInput): RawAttack[] {
@@ -56,6 +77,7 @@ function buildCombatantAttacks(attacker: CombatantInput, target: CombatantInput)
         : attacker.attackDamage
 
     attacks.push({
+      kind: 'attack',
       time: Math.round(t * 100) / 100,
       attackerLabel: attacker.label,
       targetLabel: target.label,
@@ -68,12 +90,32 @@ function buildCombatantAttacks(attacker: CombatantInput, target: CombatantInput)
   return attacks
 }
 
+function buildCombatantRegenTicks(combatant: CombatantInput): RawRegen[] {
+  if (combatant.healthRegPercent <= 0) return []
+
+  const healAmount = Math.round(combatant.hp * (combatant.healthRegPercent / 100))
+  const ticks: RawRegen[] = []
+
+  for (let t = REGEN_INTERVAL_SEC; t <= TIMELINE_DURATION_SEC + EPSILON; t += REGEN_INTERVAL_SEC) {
+    ticks.push({
+      kind: 'regen',
+      time: Math.round(t * 100) / 100,
+      label: combatant.label,
+      healAmount,
+    })
+  }
+
+  return ticks
+}
+
 export function buildTimeline(combatants: [CombatantInput, CombatantInput]): TimelineEvent[] {
   const [a, b] = combatants
 
-  const attacks = [
+  const events: RawEvent[] = [
     ...buildCombatantAttacks(a, b),
     ...buildCombatantAttacks(b, a),
+    ...buildCombatantRegenTicks(a),
+    ...buildCombatantRegenTicks(b),
   ].sort((x, y) => x.time - y.time)
 
   const maxHp: Record<string, number> = { [a.label]: a.hp, [b.label]: b.hp }
@@ -81,25 +123,38 @@ export function buildTimeline(combatants: [CombatantInput, CombatantInput]): Tim
 
   const timeline: TimelineEvent[] = []
 
-  for (const attack of attacks) {
-    currentHp[attack.targetLabel] = Math.max(0, currentHp[attack.targetLabel] - attack.damage)
+  for (const event of events) {
+    if (event.kind === 'regen') {
+      currentHp[event.label] = Math.min(maxHp[event.label], currentHp[event.label] + event.healAmount)
+      timeline.push({
+        kind: 'regen',
+        time: event.time,
+        label: event.label,
+        healAmount: event.healAmount,
+        hpAfter: currentHp[event.label],
+        maxHp: maxHp[event.label],
+      })
+      continue
+    }
+
+    currentHp[event.targetLabel] = Math.max(0, currentHp[event.targetLabel] - event.damage)
     timeline.push({
       kind: 'attack',
-      time: attack.time,
-      attackerLabel: attack.attackerLabel,
-      targetLabel: attack.targetLabel,
-      damage: attack.damage,
-      isCrit: attack.isCrit,
-      isBlocked: attack.isBlocked,
-      targetHpAfter: currentHp[attack.targetLabel],
-      targetMaxHp: maxHp[attack.targetLabel],
+      time: event.time,
+      attackerLabel: event.attackerLabel,
+      targetLabel: event.targetLabel,
+      damage: event.damage,
+      isCrit: event.isCrit,
+      isBlocked: event.isBlocked,
+      targetHpAfter: currentHp[event.targetLabel],
+      targetMaxHp: maxHp[event.targetLabel],
     })
 
-    if (currentHp[attack.targetLabel] <= 0) {
+    if (currentHp[event.targetLabel] <= 0) {
       timeline.push({
         kind: 'victory',
-        time: attack.time,
-        winnerLabel: attack.attackerLabel,
+        time: event.time,
+        winnerLabel: event.attackerLabel,
       })
       break
     }

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { RotateCw } from 'lucide-react'
 import { getBaseStat } from './baseStats.ts'
 import { getStatBase } from './stats.ts'
-import { buildTimeline, type AttackEvent } from './simulator.ts'
+import { buildTimeline, type AttackEvent, type RegenEvent } from './simulator.ts'
 import { hpColorClass } from './hpColor.ts'
 import { useCombatantStats } from './useCombatantStats.ts'
 import CombatantPanel from './components/CombatantPanel.tsx'
@@ -25,6 +25,7 @@ function App() {
           critChance: player.stats.critChance,
           critDamageMultiplier: getStatBase('critDamage') + player.stats.critDamage,
           blockChance: player.stats.block,
+          healthRegPercent: player.stats.healthReg,
         },
         {
           label: 'Foe',
@@ -35,6 +36,7 @@ function App() {
           critChance: foe.stats.critChance,
           critDamageMultiplier: getStatBase('critDamage') + foe.stats.critDamage,
           blockChance: foe.stats.block,
+          healthRegPercent: foe.stats.healthReg,
         },
       ]),
     [
@@ -42,15 +44,19 @@ function App() {
       player.stats.critChance,
       player.stats.critDamage,
       player.stats.block,
+      player.stats.healthReg,
       foe.stats.attackSpeed,
       foe.stats.critChance,
       foe.stats.critDamage,
       foe.stats.block,
+      foe.stats.healthReg,
       rerunCount,
     ],
   )
 
-  const attackEvents = timeline.filter((e): e is AttackEvent => e.kind === 'attack')
+  const logEvents = timeline.filter(
+    (e): e is AttackEvent | RegenEvent => e.kind === 'attack' || e.kind === 'regen',
+  )
   const victoryEvent = timeline.find((e) => e.kind === 'victory')
 
   return (
@@ -92,7 +98,29 @@ function App() {
             </Button>
           </div>
           <div className="flex max-h-[80vh] flex-col gap-3 overflow-y-auto font-mono text-sm whitespace-nowrap">
-            {attackEvents.map((event, index) => {
+            {logEvents.map((event, index) => {
+              if (event.kind === 'regen') {
+                const percent = Math.round((event.hpAfter / event.maxHp) * 100)
+                return (
+                  <div key={index} className="flex flex-col">
+                    <span className="text-muted-foreground">t={event.time.toFixed(2)}s</span>
+                    <span>
+                      {event.label}
+                      {': Regen'}
+                    </span>
+                    <span>
+                      {event.label}
+                      {': '}
+                      <span className="font-bold text-black dark:text-neutral-300">+{event.healAmount}</span>
+                      {' ('}
+                      <span className={hpColorClass(percent)}>{event.hpAfter}HP</span>
+                      {') '}
+                      <span className="text-neutral-500 italic">{percent}%</span>
+                    </span>
+                  </div>
+                )
+              }
+
               if (event.isBlocked) {
                 return (
                   <div key={index} className="flex flex-col">
