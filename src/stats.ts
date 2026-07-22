@@ -12,7 +12,7 @@ export interface Stat {
 export const STATS: Stat[] = [
   { key: 'block', label: 'Block', min: 0, max: 7, unit: '%' },
   { key: 'attackSpeed', label: 'Att Speed', min: 0, max: 40, unit: '%' },
-  { key: 'critChance', label: 'Crit Chance', min: 0, max: 12, unit: '%' },
+  { key: 'critChance', label: 'Crit Chance', min: 0, max: 50, unit: '%' },
   { key: 'critDamage', label: 'Crit Damage', min: 0, max: 80, unit: '%', base: 20 },
   { key: 'skillDamage', label: 'Skill Damage', min: 0, max: 30, unit: '%' },
   { key: 'healthReg', label: 'Health Reg', min: 0, max: 4, unit: '%' },
@@ -23,3 +23,7 @@ export const STATS: Stat[] = [
   { key: 'skillCooldown', label: 'Skill Cooldown', min: 0, max: 6, unit: '%' },
   { key: 'lifesteal', label: 'Lifesteal', min: 0, max: 20, unit: '%' },
 ]
+
+export function getStatBase(key: string): number {
+  return STATS.find((s) => s.key === key)?.base ?? 0
+}

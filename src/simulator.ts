@@ -4,6 +4,7 @@ export interface AttackEvent {
   attackerLabel: string
   targetLabel: string
   damage: number
+  isCrit: boolean
   targetHpAfter: number
   targetMaxHp: number
 }
@@ -22,6 +23,8 @@ export interface CombatantInput {
   attackSpeedPercent: number
   attackDamage: number
   hp: number
+  critChance: number
+  critDamageMultiplier: number
 }
 
 interface RawAttack {
@@ -29,6 +32,7 @@ interface RawAttack {
   attackerLabel: string
   targetLabel: string
   damage: number
+  isCrit: boolean
 }
 
 const TIMELINE_DURATION_SEC = 15
@@ -40,11 +44,17 @@ function buildCombatantAttacks(attacker: CombatantInput, targetLabel: string): R
   const attacks: RawAttack[] = []
 
   for (let t = interval; t <= TIMELINE_DURATION_SEC + EPSILON; t += interval) {
+    const isCrit = Math.random() * 100 < attacker.critChance
+    const damage = isCrit
+      ? Math.round(attacker.attackDamage * (1 + attacker.critDamageMultiplier / 100))
+      : attacker.attackDamage
+
     attacks.push({
       time: Math.round(t * 100) / 100,
       attackerLabel: attacker.label,
       targetLabel,
-      damage: attacker.attackDamage,
+      damage,
+      isCrit,
     })
   }
 
@@ -72,6 +82,7 @@ export function buildTimeline(combatants: [CombatantInput, CombatantInput]): Tim
       attackerLabel: attack.attackerLabel,
       targetLabel: attack.targetLabel,
       damage: attack.damage,
+      isCrit: attack.isCrit,
       targetHpAfter: currentHp[attack.targetLabel],
       targetMaxHp: maxHp[attack.targetLabel],
     })

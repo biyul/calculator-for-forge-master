@@ -1,5 +1,5 @@
 import { Minus, Plus } from 'lucide-react'
-import { STATS } from '../stats.ts'
+import { STATS, getStatBase } from '../stats.ts'
 import { BASE_STATS } from '../baseStats.ts'
 import type { StatValues } from '../useCombatantStats.ts'
 import StatInput from './StatInput.tsx'
@@ -45,6 +45,12 @@ export default function CombatantPanel({
               </div>
             </div>
           ))}
+          <div className="text-center">
+            <div className="text-sm font-semibold">Crit Damage</div>
+            <div className="text-xl font-bold tabular-nums">
+              {getStatBase('critDamage') + stats.critDamage}%
+            </div>
+          </div>
         </div>
       </div>
 

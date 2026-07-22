@@ -1,13 +1,17 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { RotateCw } from 'lucide-react'
 import { getBaseStat } from './baseStats.ts'
-import { buildTimeline } from './simulator.ts'
+import { getStatBase } from './stats.ts'
+import { buildTimeline, type AttackEvent } from './simulator.ts'
 import { hpColorClass } from './hpColor.ts'
 import { useCombatantStats } from './useCombatantStats.ts'
 import CombatantPanel from './components/CombatantPanel.tsx'
+import { Button } from '@/components/ui/button'
 
 function App() {
   const player = useCombatantStats()
   const foe = useCombatantStats()
+  const [rerunCount, setRerunCount] = useState(0)
 
   const timeline = useMemo(
     () =>
@@ -18,6 +22,8 @@ function App() {
           attackSpeedPercent: player.stats.attackSpeed,
           attackDamage: getBaseStat('attack'),
           hp: getBaseStat('hp'),
+          critChance: player.stats.critChance,
+          critDamageMultiplier: getStatBase('critDamage') + player.stats.critDamage,
         },
         {
           label: 'Foe',
@@ -25,10 +31,23 @@ function App() {
           attackSpeedPercent: foe.stats.attackSpeed,
           attackDamage: getBaseStat('attack'),
           hp: getBaseStat('hp'),
+          critChance: foe.stats.critChance,
+          critDamageMultiplier: getStatBase('critDamage') + foe.stats.critDamage,
         },
       ]),
-    [player.stats.attackSpeed, foe.stats.attackSpeed],
+    [
+      player.stats.attackSpeed,
+      player.stats.critChance,
+      player.stats.critDamage,
+      foe.stats.attackSpeed,
+      foe.stats.critChance,
+      foe.stats.critDamage,
+      rerunCount,
+    ],
   )
+
+  const attackEvents = timeline.filter((e): e is AttackEvent => e.kind === 'attack')
+  const victoryEvent = timeline.find((e) => e.kind === 'victory')
 
   return (
     <div className="px-4 pb-6">
@@ -54,22 +73,22 @@ function App() {
         />
 
         <div className="w-full max-w-md shrink-0 lg:w-[22rem]">
-          <div className="mb-2 text-center text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            Simulation
+          <div className="mb-2 flex items-center justify-center gap-2">
+            <div className="text-center text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Simulation
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-xs"
+              aria-label="Rerun simulation"
+              onClick={() => setRerunCount((n) => n + 1)}
+            >
+              <RotateCw />
+            </Button>
           </div>
           <div className="flex max-h-[80vh] flex-col gap-3 overflow-y-auto font-mono text-sm whitespace-nowrap">
-            {timeline.map((event, index) => {
-              if (event.kind === 'victory') {
-                return (
-                  <div key={index} className="flex flex-col">
-                    <span className="text-muted-foreground">t={event.time.toFixed(2)}s</span>
-                    <span>
-                      <span className="font-bold">{event.winnerLabel}</span> wins!
-                    </span>
-                  </div>
-                )
-              }
-
+            {attackEvents.map((event, index) => {
               const percent = Math.round((event.targetHpAfter / event.targetMaxHp) * 100)
               return (
                 <div key={index} className="flex flex-col">
@@ -84,6 +103,13 @@ function App() {
                     {event.targetLabel}
                     {': '}
                     <span className="font-bold text-black dark:text-neutral-300">-{event.damage}</span>
+                    {event.isCrit && (
+                      <>
+                        {' ('}
+                        <span className="font-bold text-orange-500">CRIT!</span>
+                        {')'}
+                      </>
+                    )}
                     {' ('}
                     <span className={hpColorClass(percent)}>{event.targetHpAfter}HP</span>
                     {') '}
@@ -93,6 +119,15 @@ function App() {
               )
             })}
           </div>
+
+          {victoryEvent && (
+            <div className="mt-3 flex flex-col font-mono text-sm whitespace-nowrap">
+              <span className="text-muted-foreground">t={victoryEvent.time.toFixed(2)}s</span>
+              <span>
+                <span className="font-bold">{victoryEvent.winnerLabel}</span> wins!
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
