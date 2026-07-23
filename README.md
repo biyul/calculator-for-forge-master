@@ -1,16 +1,26 @@
-# React + Vite
+# DPS Calculator
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A generic DPS (damage per second) calculator and combat simulator. Enter your character's stats and simulate combat to see how they play out.
 
-Currently, two official plugins are available:
+This project was built as a vibecoding experiment — the whole app was created through conversational prompts to Claude Code, with no hand-written code.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Running it
 
-## React Compiler
+```bash
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Then open the URL Vite prints (typically `http://localhost:5173`).
 
-## Expanding the Oxlint configuration
+### Other commands
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```bash
+npm run build    # type-check and build for production
+npm run preview  # preview the production build locally
+npm run lint     # run oxlint
+```
+
+## Tech stack
+
+React + TypeScript, built with Vite, styled with Tailwind CSS.
